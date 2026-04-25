@@ -1,1 +1,0 @@
-ssh root@175.178.189.55 "mkdir -p ~/.ssh && echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMiGxl05gas1WsyFQFp3XAXz1OVjU3SlxC6CFL2EcU8Y my-laptop' >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys && echo '公钥添加成功！'"

@@ -6,3 +6,18 @@ node_modules/
 public/
 .deploy*/
 .multiconfig.yml
+
+# SSH keys (隐私文件，永不上传)
+.ssh/
+*.pem
+*.key
+
+# 环境变量和配置
+.env
+.env.local
+config.json
+
+# 临时文件
+*.tmp
+*.bak
+*~

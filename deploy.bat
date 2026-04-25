@@ -17,7 +17,7 @@ set SSH_PORT=22
 
 REM 1. 清理并生成静态文件
 echo.
-echo [1/4] 清理旧文件并生成博客...
+echo [1/5] 清理旧文件并生成博客...
 call npx hexo clean
 call npx hexo generate
 
@@ -29,29 +29,35 @@ if %errorlevel% neq 0 (
 
 echo ✓ 博客生成成功
 
-REM 2. 同步文件到服务器
+REM 2. 清空服务器上的旧文件
 echo.
-echo [2/4] 同步文件到服务器 (%SERVER_IP%)...
-
-REM 使用 rsync 同步文件
-rsync -avz --delete ^
-    -e "ssh -p %SSH_PORT%" ^
-    --exclude '.DS_Store' ^
-    --exclude 'node_modules' ^
-    .\public\ ^
-    %SERVER_USER%@%SERVER_IP%:%SERVER_PATH%/
+echo [2/5] 清空服务器旧文件...
+ssh -p %SSH_PORT% %SERVER_USER%@%SERVER_IP% "rm -rf /var/www/hexo/* && echo 服务器旧文件已清空"
 
 if %errorlevel% neq 0 (
-    echo 错误：文件同步失败！
+    echo 警告：清空服务器文件失败，继续尝试复制...
+)
+
+echo ✓ 服务器准备就绪
+
+REM 3. 复制文件到服务器（使用 scp）
+echo.
+echo [3/5] 复制文件到服务器 (%SERVER_IP%)...
+
+REM 使用 scp 递归复制文件
+scp -P %SSH_PORT% -r .\public\* %SERVER_USER%@%SERVER_IP%:%SERVER_PATH%/
+
+if %errorlevel% neq 0 (
+    echo 错误：文件复制失败！
     pause
     exit /b 1
 )
 
-echo ✓ 文件同步成功
+echo ✓ 文件复制成功
 
-REM 3. 在服务器上设置正确的权限
+REM 4. 设置正确的权限
 echo.
-echo [3/4] 设置服务器文件权限...
+echo [4/5] 设置服务器文件权限...
 
 ssh -p %SSH_PORT% %SERVER_USER%@%SERVER_IP% "chmod -R 755 /var/www/hexo && find /var/www/hexo -type f -exec chmod 644 {} \; && echo 权限设置完成"
 
@@ -63,9 +69,9 @@ if %errorlevel% neq 0 (
 
 echo ✓ 权限设置成功
 
-REM 4. 重启 Nginx
+REM 5. 重启 Nginx
 echo.
-echo [4/4] 重启 Nginx 服务...
+echo [5/5] 重启 Nginx 服务...
 
 ssh -p %SSH_PORT% %SERVER_USER%@%SERVER_IP% "systemctl restart nginx"
 
